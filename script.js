@@ -30,10 +30,12 @@ function convertToICS(text) {
     let icsContent = `BEGIN:VCALENDAR\nVERSION:2.0\nCALSCALE:GREGORIAN\n`;
 
     lines.forEach(line => {
-        const [code, type, startDate, startTime, endDate, endTime, from, to, flightNumber] = line.trim().split(/\s+/);
-        
-        // Solo para eventos con código "CO" (vuelos en este caso)
-        if (code === 'CO') {
+        //Ignorar líneas vacías o mal formateadas
+
+        if (line.trim().split(/\s+/).length > 7) {
+
+            const [code, type, startDate, startTime, endDate, endTime, from, to, flightNumber] = line.trim().split(/\s+/);
+
             const start = formatICSTime(startDate, startTime);
             const end = formatICSTime(endDate, endTime);
 
@@ -42,11 +44,27 @@ function convertToICS(text) {
             icsContent += `DTSTAMP:${start}\n`;
             icsContent += `DTSTART:${start}\n`;
             icsContent += `DTEND:${end}\n`;
-            icsContent += `SUMMARY:Vuelo de ${from} a ${to}\n`;
+            icsContent += `SUMMARY:Vuelo ${type} de ${from} a ${to}\n`;
             if (flightNumber) {
-                icsContent += `DESCRIPTION:Numero de vuelo: ${flightNumber}\n`;
+                icsContent += `DESCRIPTION:Vuelo número ${flightNumber}\n`;
             }
             icsContent += `LOCATION:${from} a ${to}\n`;
+
+            icsContent += `END:VEVENT\n`;
+        }
+        else {
+            const [code, startDate, startTime, endDate, endTime, from, to] = line.trim().split(/\s+/);
+
+            const start = formatICSTime(startDate, startTime);
+            const end = formatICSTime(endDate, endTime);
+
+            icsContent += `BEGIN:VEVENT\n`;
+            icsContent += `UID:${start}${end}\n`;
+            icsContent += `DTSTAMP:${start}\n`;
+            icsContent += `DTSTART:${start}\n`;
+            icsContent += `DTEND:${end}\n`;
+            icsContent += `SUMMARY:${code}\n`;
+            icsContent += `DESCRIPTION:${code} en ${from}\n`;
             icsContent += `END:VEVENT\n`;
         }
     });
@@ -55,10 +73,9 @@ function convertToICS(text) {
     return icsContent;
 }
 
-// Formatear fecha y hora en formato ICS
+// Función para formatear fecha y hora en formato ICS (YYYYMMDDTHHMMSSZ)
 function formatICSTime(date, time) {
     const [day, month, year] = date.split('/');
     const [hour, minute] = time.split(':');
-    return `${year}${month}${day}T${hour}${minute}00Z`; // Usamos formato UTC
+    return `${year}${month}${day}T${hour}${minute}00Z`; // Ajustar según sea necesario
 }
-
