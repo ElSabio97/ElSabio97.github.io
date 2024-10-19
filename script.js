@@ -33,7 +33,7 @@ function convertToICS(text) {
         const [code, type, startDate, startTime, endDate, endTime, from, to, flightNumber] = line.trim().split(/\s+/);
         
         // Solo para eventos con código "CO" (vuelos en este caso)
-        if (code === 'CO') {
+
             const start = formatICSTime(startDate, startTime);
             const end = formatICSTime(endDate, endTime);
 
@@ -46,9 +46,12 @@ function convertToICS(text) {
             if (flightNumber) {
                 icsContent += `DESCRIPTION:Numero de vuelo: ${flightNumber}\n`;
             }
+            else {
+                icsContent += `DESCRIPTION: ${code}\n`;
+            }
             icsContent += `LOCATION:${from} a ${to}\n`;
             icsContent += `END:VEVENT\n`;
-        }
+        
     });
 
     icsContent += `END:VCALENDAR`;
