@@ -38,7 +38,7 @@ function convertToICS(text) {
             const end = formatICSTime(endDate, endTime);
 
             icsContent += `BEGIN:VEVENT\n`;
-            icsContent += `UID:${generateUID()}\n`;
+            icsContent += `UID:${start}${end}\n`;
             icsContent += `DTSTAMP:${start}\n`;
             icsContent += `DTSTART:${start}\n`;
             icsContent += `DTEND:${end}\n`;
