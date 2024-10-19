@@ -38,8 +38,8 @@ function convertToICS(text) {
             const end = formatICSTime(endDate, endTime);
 
             icsContent += `BEGIN:VEVENT\n`;
-            icsContent += `UID:${generateUID()}\n`;
-            icsContent += `DTSTAMP:${start}\n`;
+            icsContent += `UID:${start}\n`;
+            icsContent += `DTSTAMP:${start}${end}\n`;
             icsContent += `DTSTART:${start}\n`;
             icsContent += `DTEND:${end}\n`;
             icsContent += `SUMMARY:Vuelo de ${from} a ${to}\n`;
@@ -62,7 +62,3 @@ function formatICSTime(date, time) {
     return `${year}${month}${day}T${hour}${minute}00Z`; // Usamos formato UTC
 }
 
-// Generar un UID para cada evento
-function generateUID() {
-    return `${Date.now()}@example.com`;
-}
