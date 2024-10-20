@@ -2,8 +2,6 @@ import { funciones, parse_calendar, build_type_subtype_map } from "./funciones.j
 
 const type_subtype_map = build_type_subtype_map();
 
-console.log(type_subtype_map)
-
 document.getElementById('pasteButton').addEventListener('click', async () => {
     try {
         // Solicita acceso al portapapeles y pega el contenido
@@ -39,9 +37,6 @@ function convertToICS(text) {
     lines.forEach(line => {
 
         const [code_ser, code_fun, startDate, endDate, from, to, tip_cur, flightNumber, loc] = line.map(item => item.trim());;
-
-        const dbg = [code_ser, code_fun, startDate, endDate, from, to, tip_cur, flightNumber, loc];
-        console.log(dbg);
 
         const start = formatICSTime(startDate);
         const end = formatICSTime(endDate);
