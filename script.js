@@ -1,3 +1,9 @@
+import { funciones, parse_calendar, build_type_subtype_map } from "./funciones.js";
+
+const type_subtype_map = build_type_subtype_map();
+
+console.log(type_subtype_map)
+
 document.getElementById('pasteButton').addEventListener('click', async () => {
     try {
         // Solicita acceso al portapapeles y pega el contenido
@@ -26,47 +32,44 @@ document.getElementById('pasteButton').addEventListener('click', async () => {
 
 // Función para convertir el texto pegado en formato ICS
 function convertToICS(text) {
-    const lines = text.split('\n').filter(line => line.trim() !== '');
+    // const lines = text.split('\n').filter(line => line.trim() !== '');
+    const lines = parse_calendar(text);
     let icsContent = `BEGIN:VCALENDAR\nVERSION:2.0\nCALSCALE:GREGORIAN\n`;
 
     lines.forEach(line => {
-        //Ignorar líneas vacías o mal formateadas
 
-        if (line.trim().split(/\s+/).length > 7) {
+        const [code_ser, code_fun, startDate, endDate, from, to, tip_cur, flightNumber, loc] = line.map(item => item.trim());;
 
-            const [code, type, startDate, startTime, endDate, endTime, from, to, flightNumber] = line.trim().split(/\s+/);
+        const dbg = [code_ser, code_fun, startDate, endDate, from, to, tip_cur, flightNumber, loc];
+        console.log(dbg);
 
-            const start = formatICSTime(startDate, startTime);
-            const end = formatICSTime(endDate, endTime);
+        const start = formatICSTime(startDate);
+        const end = formatICSTime(endDate);
 
-            icsContent += `BEGIN:VEVENT\n`;
-            icsContent += `UID:${start}${end}\n`;
-            icsContent += `DTSTAMP:${start}\n`;
-            icsContent += `DTSTART:${start}\n`;
-            icsContent += `DTEND:${end}\n`;
-            icsContent += `SUMMARY:Vuelo ${type} de ${from} a ${to}\n`;
-            if (flightNumber) {
-                icsContent += `DESCRIPTION:Vuelo número ${flightNumber}\n`;
-            }
+        icsContent += `BEGIN:VEVENT\n`;
+        icsContent += `UID:${start}${end}\n`;
+        icsContent += `DTSTAMP:${start}\n`;
+        icsContent += `DTSTART:${start}\n`;
+        icsContent += `DTEND:${end}\n`;
+        if (code_fun) {
+            icsContent += `DESCRIPTION:${funciones[code_fun]}\n`;
+        }
+        if (flightNumber) {
+            icsContent += `SUMMARY:${flightNumber}\n`;
+        } else if (code_ser === "CO") {
+            icsContent += `SUMMARY:Vuelo\n`;
+        } else {
+            icsContent += `SUMMARY:${code_ser}\n`;
+            icsContent += `DESCRIPTION:${type_subtype_map[code_ser].description.trim()}\n`
+        }
+        if (from === to) {
+            icsContent += `LOCATION:${from}\n`;
+        } else {
             icsContent += `LOCATION:${from} a ${to}\n`;
 
-            icsContent += `END:VEVENT\n`;
         }
-        else {
-            const [code, startDate, startTime, endDate, endTime, from, to] = line.trim().split(/\s+/);
+        icsContent += `END:VEVENT\n`;
 
-            const start = formatICSTime(startDate, startTime);
-            const end = formatICSTime(endDate, endTime);
-
-            icsContent += `BEGIN:VEVENT\n`;
-            icsContent += `UID:${start}${end}\n`;
-            icsContent += `DTSTAMP:${start}\n`;
-            icsContent += `DTSTART:${start}\n`;
-            icsContent += `DTEND:${end}\n`;
-            icsContent += `SUMMARY:${code}\n`;
-            icsContent += `DESCRIPTION:${code} en ${from}\n`;
-            icsContent += `END:VEVENT\n`;
-        }
     });
 
     icsContent += `END:VCALENDAR`;
@@ -74,7 +77,9 @@ function convertToICS(text) {
 }
 
 // Función para formatear fecha y hora en formato ICS (YYYYMMDDTHHMMSSZ)
-function formatICSTime(date, time) {
+function formatICSTime(datetime) {
+    const date = datetime.split(' ')[0];
+    const time = datetime.split(' ')[1]
     const [day, month, year] = date.split('/');
     const [hour, minute] = time.split(':');
     return `${year}${month}${day}T${hour}${minute}00Z`; // Ajustar según sea necesario
